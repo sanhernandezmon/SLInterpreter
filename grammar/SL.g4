@@ -7,6 +7,7 @@ commands   : command commands
 
 command    : conditionals
         | repeat
+        | while
         | printexpr
         | declaration
         | assignation
@@ -15,10 +16,12 @@ command    : conditionals
 
 declaration: VAR ID 'as' expr SMCOLON;
 assignation: ID 'as' expr SMCOLON;
-conditional: 'if' expr ROP expr 'then' commands 'endif';
+conditional: 'if' condition 'then' commands 'endif';
 conditionals: conditional ELSE commands 'endelse'
             | conditional;
 repeat: 'repeat' expr 'times' commands 'endrepeat';
+while: WHILE condition 'then' commands 'endwhile';
+condition : expr ROP expr;
 printexpr: 'print' expr SMCOLON ;
 expr:  expr MULOP expr
    |  expr SUMOP expr
@@ -28,11 +31,12 @@ expr:  expr MULOP expr
    ;
 
 
-COMMENT       : '/*' .*? '*/' -> skip ;
+COMMENT        : '/*' .*? '*/' -> skip ;
 LINE_COMMENT   : '//' ~[\r\n]* -> skip ;
-WS    : [ \t\r\n]+ -> skip ;
-VAR       : 'var';
-ELSE     :'else';
+WS     : [ \t\r\n]+ -> skip ;
+VAR    : 'var';
+ELSE   :'else';
+WHILE  :'while';
 PIZQ   : '(' ;
 PDER   : ')' ;
 ROP       : ( '<' | '<=' | '>=' | '>' | '==' | '!=' ) ;

@@ -52,6 +52,18 @@ public interface SLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitRepeat(SLParser.RepeatContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SLParser#while}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitWhile(SLParser.WhileContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SLParser#condition}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCondition(SLParser.ConditionContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SLParser#printexpr}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

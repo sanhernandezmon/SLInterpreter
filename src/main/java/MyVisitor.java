@@ -4,8 +4,11 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
 
     HashMap<String,Object> table = new HashMap<>();
 
-
-
+    @Override public T visitCommands(SLParser.CommandsContext ctx) {
+        if(ctx.command()!= null) visitCommand(ctx.command());
+        if(ctx.commands()!= null) visitCommands(ctx.commands());
+        return null;
+    }
 
     @Override public T visitCommand(SLParser.CommandContext ctx) {
         if (ctx.printexpr() != null) {
@@ -25,7 +28,7 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
         return null;
     }
 
-    @Override public T visitConditional(SLParser.ConditionalContext ctx) {
+    @Override public T visitCondition(SLParser.ConditionContext ctx) {
         String op = ctx.ROP().getText();
         Double num1 = (Double) visitExpr(ctx.expr(0));
         Double num2 = (Double) visitExpr(ctx.expr(1));
@@ -51,10 +54,15 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
                 ans = Math.abs(num1 - num2) > 0.000000001;
                 break;
         }
-        if (ans) {
+        return (T)ans;
+    }
+
+    @Override public T visitConditional(SLParser.ConditionalContext ctx) {
+        Boolean condition = (Boolean) visitCondition(ctx.condition());
+        if (condition){
             visitCommands(ctx.commands());
         }
-        return (T)ans;
+        return (T) condition;
     }
 
     @Override public T visitExpr(SLParser.ExprContext ctx) {
@@ -120,6 +128,25 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
         return null;
     }
 
+    @Override public T visitAssignation(SLParser.AssignationContext ctx) {
+        if(table.get(ctx.ID().getText())!= null){
+            table.put(ctx.ID().getText(), visitExpr(ctx.expr()));
+        }else{
+            int line = ctx.ID().getSymbol().getLine();
+            int col = ctx.ID().getSymbol().getCharPositionInLine()+1;
+            System.err.printf("<%d:%d> Error semantico, la variable con nombre \"" + ctx.ID().getText() + "\" no fue declarada.\n", line, col);
+            System.exit(-1);
+        }
+        return null;
+    }
 
+    @Override public T visitWhile(SLParser.WhileContext ctx) {
+        Boolean condition = (Boolean) visitCondition(ctx.condition());
+        while (condition){
+            visitCommands(ctx.commands());
+            condition = (Boolean) visitCondition(ctx.condition());
+        }
+        return null;
+    }
 }
 
