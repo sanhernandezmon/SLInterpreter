@@ -5,8 +5,19 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
     HashMap<String,Object> table = new HashMap<>();
 
 
-    @Override
-    public T visitRepeat(SLParser.RepeatContext ctx) {
+
+
+    @Override public T visitCommand(SLParser.CommandContext ctx) {
+        if (ctx.printexpr() != null) {
+            Double ans = (Double) visitExpr(ctx.printexpr().expr());
+            System.out.println(ans);
+        }else {
+            return visitChildren(ctx);
+        }
+        return null;
+    }
+
+    @Override public T visitRepeat(SLParser.RepeatContext ctx) {
         int times = (int)(double)(Double)visitExpr(ctx.expr());
         for(int i=0 ; i<times ; i++){
             visitCommands(ctx.commands());
@@ -14,12 +25,11 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
         return null;
     }
 
-    @Override
-    public T visitConditional(SLParser.ConditionalContext ctx) {
+    @Override public T visitConditional(SLParser.ConditionalContext ctx) {
         String op = ctx.ROP().getText();
         Double num1 = (Double) visitExpr(ctx.expr(0));
         Double num2 = (Double) visitExpr(ctx.expr(1));
-        Boolean ans = null;
+        Boolean ans = false;
 
         switch (op) {
             case "<":
@@ -44,34 +54,12 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
         if (ans) {
             visitCommands(ctx.commands());
         }
-        return null;
+        return (T)ans;
     }
 
-    @Override
-    public T visitCommand(SLParser.CommandContext ctx) {
-        if (ctx.printexpr() != null) {
-            Double ans = (Double) visitExpr(ctx.printexpr().expr());
-            System.out.println(ans);
-        } else if (ctx.VAR() != null) {
-            String name = ctx.ID().getText();
-            if (table.get(name) != null) {
-                int line = ctx.ID().getSymbol().getLine();
-                int col = ctx.ID().getSymbol().getCharPositionInLine()+1;
-                System.err.printf("<%d:%d> Error semantico, la variable con nombre: \"" + name + "\" ya fue declarada.\n", line, col);
-                System.exit(-1);
-            } else {
-                table.put(name, visitExpr(ctx.expr()));
-            }
-        } else {
-            return visitChildren(ctx);
-        }
-        return super.visitCommand(ctx);
-    }
-
-    @Override
-    public T visitExpr(SLParser.ExprContext ctx) {
+    @Override public T visitExpr(SLParser.ExprContext ctx) {
         if (ctx.DOUBLE() != null) {
-            Double num = new Double(ctx.DOUBLE().getText());
+            Double num = Double.parseDouble(ctx.DOUBLE().getText());
             return (T) num;
         } else if (ctx.PIZQ() != null) {
             return visitExpr(ctx.expr(0));
@@ -81,7 +69,6 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
             if ((value = table.get(name)) == null) {
                 int line = ctx.ID().getSymbol().getLine();
                 int col = ctx.ID().getSymbol().getCharPositionInLine()+1;
-                //Podría ser en .out también.
                 System.err.printf("<%d:%d> Error semantico, la variable con nombre \"" + name + "\" no fue declarada.\n", line, col);
                 System.exit(-1);
                 return null;
@@ -112,13 +99,27 @@ public class MyVisitor<T> extends SLBaseVisitor<T> {
         }
     }
 
-    @Override
-    public T visitConditionals(SLParser.ConditionalsContext ctx) {
-        visitConditional(ctx.conditional());
-        if(ctx.ELSE() != null){
-            visitConditionals(ctx.conditionals());
+    @Override public T visitConditionals(SLParser.ConditionalsContext ctx) {
+        boolean conditionSatisfied =(Boolean) visitConditional(ctx.conditional());
+        if(ctx.ELSE() != null && !conditionSatisfied){
+            visitCommands(ctx.commands());
         }
         return null;
     }
+
+    @Override public T visitDeclaration(SLParser.DeclarationContext ctx) {
+        String name = ctx.ID().getText();
+        if (table.get(name) != null) {
+            int line = ctx.ID().getSymbol().getLine();
+            int col = ctx.ID().getSymbol().getCharPositionInLine()+1;
+            System.err.printf("<%d:%d> Error semantico, la variable con nombre: \"" + name + "\" ya fue declarada.\n", line, col);
+            System.exit(-1);
+        } else {
+            table.put(name, visitExpr(ctx.expr()));
+        }
+        return null;
+    }
+
+
 }
 

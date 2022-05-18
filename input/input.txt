@@ -1,0 +1,12 @@
+var pi as 3.14;
+pi as 3.5;
+print pi;
+if pi < 3.6 then
+    repeat 3 times
+        print pi*2;
+    endrepeat
+endif
+else
+    print pi-2;
+endelse
+print 1;

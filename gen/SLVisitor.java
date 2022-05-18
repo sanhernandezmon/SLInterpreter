@@ -22,6 +22,18 @@ public interface SLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCommand(SLParser.CommandContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link SLParser#declaration}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDeclaration(SLParser.DeclarationContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SLParser#assignation}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitAssignation(SLParser.AssignationContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link SLParser#conditional}.
 	 * @param ctx the parse tree
 	 * @return the visitor result

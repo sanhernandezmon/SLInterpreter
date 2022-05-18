@@ -8,23 +8,25 @@ commands   : command commands
 command    : conditionals
         | repeat
         | printexpr
-        | VAR ID 'as' expr SMCOLON
+        | declaration
+        | assignation
         ;
 
-conditional : 'if' expr ROP expr 'then' commands 'endif';
 
-conditionals : conditional ELSE conditionals
-    | conditional;
-
-repeat    : 'repeat' expr 'times' commands 'endrepeat';
-printexpr  : 'print' expr SMCOLON ;
-
+declaration: VAR ID 'as' expr SMCOLON;
+assignation: ID 'as' expr SMCOLON;
+conditional: 'if' expr ROP expr 'then' commands 'endif';
+conditionals: conditional ELSE commands 'endelse'
+            | conditional;
+repeat: 'repeat' expr 'times' commands 'endrepeat';
+printexpr: 'print' expr SMCOLON ;
 expr:  expr MULOP expr
    |  expr SUMOP expr
    |  DOUBLE
    |  PIZQ expr PDER
    |  ID
    ;
+
 
 COMMENT       : '/*' .*? '*/' -> skip ;
 LINE_COMMENT   : '//' ~[\r\n]* -> skip ;
